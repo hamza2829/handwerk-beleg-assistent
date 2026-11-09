@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ein lokaler Prototyp für die Belegprüfung und Auftragsübersicht in einem fiktiven Handwerksbetrieb.">
+  <title>Handwerk Beleg-Assistent</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap nav">
+      <a href="#start" class="brand"><span class="mark" aria-hidden="true">HB</span> Handwerk Beleg-Assistent</a>
+      <nav aria-label="Seitenabschnitte"><a href="#ablauf">Ablauf</a><a href="#demo">Demo</a></nav>
+    </div>
+  </header>
+  <main id="start">
+    <section class="hero wrap">
+      <div>
+        <p class="eyebrow">LOKALER PROTOTYP FÜR HANDWERKSBETRIEBE</p>
+        <h1>Belege sortieren.<br>Aufträge im Blick.</h1>
+        <p class="intro">Rechnungen, Lieferscheine, Angebote und Mahnungen landen an einer Stelle.
+          Der Assistent schlägt einen Typ vor und zeigt, welche Belege jemand prüfen sollte.
+          Die Aufträge kommen aus einer Excel-Datei.</p>
+        <a class="button" href="#demo">Demo ansehen <span aria-hidden="true">↓</span></a>
+      </div>
+      <aside class="workflow" aria-label="Funktionsübersicht">
+        <p class="eyebrow">VOM EINGANG ZUR ABLAGE</p>
+        <div><span>01</span><strong>PDF einlesen</strong><small>Text aus dem Beleg</small></div>
+        <div><span>02</span><strong>Typ prüfen</strong><small>Vorschlag und Prüfstatus</small></div>
+        <div><span>03</span><strong>Auftrag zuordnen</strong><small>Beleg und Auftrag verbinden</small></div>
+      </aside>
+    </section>
+
+    <section class="work" id="ablauf">
+      <div class="wrap">
+        <p class="eyebrow">ABLAUF</p>
+        <h2>So funktioniert es in drei Schritten</h2>
+        <ol class="steps">
+          <li><h3>Beleg erfassen</h3><p>PDF über die lokale Schnittstelle hochladen. Der Assistent liest den vorhandenen Text aus.</p></li>
+          <li><h3>Vorschlag prüfen</h3><p>Regeln und ein deterministisches Mock-Modell schlagen eine Belegart vor. Unsichere Fälle erscheinen in der Prüfwarteschlange.</p></li>
+          <li><h3>Auftrag ergänzen</h3><p>Aufträge aus Excel übernehmen, Belege zuordnen und den Bearbeitungsstatus in der Anwendung pflegen.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="wrap demo" id="demo">
+      <p class="eyebrow">DEMO MIT FIKTIVEN DATEN</p>
+      <h2>Ein Blick in die Anwendung</h2>
+      <p class="caption">Playwright hat die laufende Demo in GitHub Actions aufgenommen. Alle dargestellten Belege und Kunden sind fiktiv.</p>
+      <div class="screens">
+        <figure>
+          <a href="assets/review.png"><img src="assets/review.png" width="1360" height="900" alt="Prüfwarteschlange mit Belegvorschlägen und Auswahl für die manuelle Prüfung"></a>
+          <figcaption><strong>Prüfwarteschlange</strong> · Typvorschläge und manuelle Bestätigung</figcaption>
+        </figure>
+        <figure>
+          <a href="assets/jobs.png"><img src="assets/jobs.png" width="1360" height="900" alt="Auftragsliste mit synthetischen Kunden, Status, Beträgen und Beleganzahl"></a>
+          <figcaption><strong>Auftragsübersicht</strong> · Importierte Zeilen und verknüpfte Belege</figcaption>
+        </figure>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap">Handwerk Beleg-Assistent <span>Lokale Demo mit synthetischen Daten</span></div></footer>
+</body>
+</html>
