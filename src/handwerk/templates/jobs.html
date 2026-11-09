@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Aufträge{% endblock %}
+{% block content %}
+<section class="heading">
+  <p class="eyebrow">AUFTRÄGE / ÜBERSICHT</p>
+  <h1>Aufträge</h1>
+  <p>Importierte Excel-Zeilen mit aktuellem Status und verknüpften Belegen.</p>
+</section>
+<div class="cards two" aria-label="Auftragsbestand">
+  <div class="card"><span>Aufträge</span><strong>{{ jobs|length }}</strong></div>
+  <div class="card"><span>Summe der erfassten Beträge</span><strong>{{ euro(total) }}</strong></div>
+</div>
+<section class="panel">
+  <div class="panel-head"><h2>Auftragsliste</h2><p>Beträge in EUR</p></div>
+  {% if jobs %}
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">Auftragsnummer</th><th scope="col">Kunde</th><th scope="col">Status</th><th scope="col">Betrag</th><th scope="col">Belege</th></tr></thead>
+    <tbody>
+    {% for job in jobs %}
+      <tr data-job-id="{{ job.job_id }}">
+        <th scope="row">{{ job.job_id }}</th><td>{{ job.customer }}</td>
+        <td><span class="tag status-{{ job.status }}">{{ labels[job.status] }}</span></td>
+        <td>{{ euro(job.amount_cents) }}</td><td>{{ job.documents }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="empty">Noch keine Aufträge importiert.</p>
+  {% endif %}
+</section>
+{% endblock %}

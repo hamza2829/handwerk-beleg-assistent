@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Belege prüfen{% endblock %}
+{% block content %}
+<section class="heading">
+  <p class="eyebrow">BELEGE / EINGANG</p>
+  <h1>Belege prüfen</h1>
+  <p>Unsichere Zuordnungen ansehen, den Belegtyp wählen und bestätigen.</p>
+</section>
+<div class="cards" aria-label="Bestand">
+  <div class="card"><span>Belege gesamt</span><strong>{{ counts.total }}</strong></div>
+  <div class="card focus"><span>Zur Prüfung</span><strong id="pending-count">{{ counts.pending }}</strong></div>
+  <div class="card"><span>Mit Auftrag verknüpft</span><strong>{{ counts.linked }}</strong></div>
+</div>
+<section class="panel">
+  <div class="panel-head"><h2>Prüfwarteschlange</h2><p>Bis zu 50 offene Belege</p></div>
+  {% if pending %}
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">Beleg</th><th scope="col">Automatischer Vorschlag</th><th scope="col">Manuelle Prüfung</th></tr></thead>
+    <tbody>
+    {% for item in pending %}
+      <tr data-document-id="{{ item.id }}">
+        <td class="preview">
+          <a class="file" href="/documents/{{ item.id }}/file">{{ item.filename }}</a>
+          <p>{{ item.preview or "Kein extrahierbarer Text." }}</p>
+        </td>
+        <td>
+          <span class="tag">{{ labels[item.document_type] }} · {{ '%.0f'|format(item.confidence * 100) }} %</span>
+          <p>{{ item.reason }}</p>
+        </td>
+        <td>
+          <form method="post" action="/review/{{ item.id }}">
+            <label class="visually-hidden" for="type-{{ item.id }}">Belegtyp für {{ item.filename }}</label>
+            <select name="document_type" id="type-{{ item.id }}">
+            {% for key, title in labels.items() %}
+              <option value="{{ key }}"{% if key == item.document_type %} selected{% endif %}>{{ title }}</option>
+            {% endfor %}
+            </select>
+            <button type="submit">Bestätigen</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="empty">Keine Belege zur Prüfung.</p>
+  {% endif %}
+</section>
+{% endblock %}

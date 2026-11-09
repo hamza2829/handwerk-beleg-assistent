@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} | Handwerk Beleg-Assistent</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+</head>
+<body>
+  <header class="top">
+    <div class="shell masthead">
+      <a class="brand" href="/"><span class="mark" aria-hidden="true">HB</span><span>Handwerk<br>Beleg-Assistent</span></a>
+      <nav aria-label="Anwendung">
+        <a href="/"{% if active == 'review' %} aria-current="page"{% endif %}>Belege prüfen</a>
+        <a href="/auftraege"{% if active == 'jobs' %} aria-current="page"{% endif %}>Aufträge</a>
+      </nav>
+      <span class="demo">Synthetische Demo</span>
+    </div>
+  </header>
+  <main class="shell">{% block content %}{% endblock %}</main>
+  <footer class="shell">Lokaler Prototyp für fiktive Aufträge und Belege. <a href="/docs">API ansehen</a></footer>
+</body>
+</html>
