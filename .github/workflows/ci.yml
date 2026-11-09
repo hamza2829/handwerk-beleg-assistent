@@ -1,0 +1,110 @@
+name: Handwerk Beleg-Assistent CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install '.[dev]'
+      - run: ruff check --output-format github
+
+  tests:
+    name: Tests and PDF benchmark
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install '.[dev]'
+      - name: Test and measure coverage
+        run: |
+          mkdir -p artifacts/evidence
+          pytest -q --cov=handwerk --cov-report=term-missing \
+            --cov-report=json:artifacts/evidence/coverage.json \
+            --junitxml=artifacts/evidence/pytest-results.xml
+      - name: Generate labeled PDFs and evaluate
+        run: |
+          beleg-assistent generate --seed 2829 --out artifacts/evidence/sample
+          beleg-assistent evaluate artifacts/evidence/sample --out artifacts/evidence
+      - name: Record measured results
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          out = Path("artifacts/evidence")
+          suites = ElementTree.parse(out / "pytest-results.xml").getroot()
+          tests = sum(int(suite.get("tests")) for suite in suites.findall("testsuite"))
+          coverage = json.loads((out / "coverage.json").read_text())["totals"]
+          result = json.loads((out / "benchmark.json").read_text())
+          assert tests >= 40
+          assert result["total"] >= 60
+          passed = f'{tests} tests passed. Line coverage {coverage["percent_covered"]:.2f}%.'
+          accuracy = (
+              f'Exact type accuracy {result["accuracy_pct"]:.2f}% '
+              f'({result["correct"]}/{result["total"]}). {len(result["failures"])} errors, '
+              f'{result["unflagged_errors"]} unflagged. {result["flagged"]} flagged for review.'
+          )
+          print(passed)
+          print(accuracy)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as stream:
+              stream.write(f"### Measured results\n\n{passed}\n\n{accuracy}\n")
+          PY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: synthetic-data-and-benchmark
+          path: artifacts/evidence/
+          if-no-files-found: error
+
+  landing:
+    name: Playwright and static landing page
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install '.[browser]'
+      - run: python -m playwright install --with-deps --only-shell chromium
+      - name: Capture the running demo and build the landing page
+        shell: bash
+        run: |
+          beleg-assistent generate --seed 2829 --out artifacts/sample
+          beleg-assistent --db artifacts/demo.sqlite load-demo artifacts/sample
+          HANDWERK_DB=artifacts/demo.sqlite python -m uvicorn handwerk.api:app \
+            --host 127.0.0.1 --port 8765 > artifacts/uvicorn.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for _ in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8765/healthz > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent --show-error http://127.0.0.1:8765/healthz
+          python scripts/capture_demo.py --base http://127.0.0.1:8765 --out dist
+      - uses: actions/upload-artifact@v6
+        with:
+          name: landing-page
+          path: dist/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: browser-diagnostics
+          path: artifacts/uvicorn.log
+          if-no-files-found: ignore
